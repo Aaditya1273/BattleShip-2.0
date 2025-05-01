@@ -25,7 +25,7 @@ A modern, animated Battleship game built with **Node.js**, **Express**, **Socket
    ```sh
    npm start
    ```
-```
+
 ## 🧭 Play Guide
 
 - 🔹 **Singleplayer**: Drag ships → Start → Defeat AI  
