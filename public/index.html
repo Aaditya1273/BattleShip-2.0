@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battleship</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Montserrat&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="ClickSpark.js"></script>
+  </head>
+  <body>
+    <!-- Theme Switch -->
+    <div class="theme-switch-container">
+      <span class="theme-label">Theme:</span>
+      <label class="theme-switch">
+        <input type="checkbox" id="theme-toggle">
+        <span class="theme-slider"></span>
+      </label>
+      <span class="theme-icon" id="theme-icon">☀️</span>
+    </div>
+
+    <!-- Water Transition Container -->
+    <div class="water-transition" id="water-transition">
+      <div class="water-ripple"></div>
+      <div class="water-wave"></div>
+      <div class="bubbles" id="bubbles"></div>
+    </div>
+
+    <div class="splash-container">
+      <div class="game-logo">
+        <h1 class="logo-text">BATTLESHIP</h1>
+      </div>
+      <div class="logo-subtitle">NAVAL COMBAT STRATEGY</div>
+      <div class="splash-buttons">
+        <a href="/singleplayer.html" class="btn splash-btn" data-water-transition>Single Player</a>
+        <a href="/multiplayer.html" class="btn splash-btn" data-water-transition>Multiplayer</a>
+      </div>
+      <div class="subtitle">
+        <p>Drag, drop, and destroy your enemy's fleet!</p>
+      </div>
+    </div>
+    
+    <footer class="footer">
+      <p>© 2023 Battleship Game | <a href="https://github.com/kubowania/battleships" target="_blank">GitHub</a></p>
+    </footer>
+    
+    <script>
+      // Simple animation for menu buttons
+      document.querySelectorAll('.splash-btn').forEach((btn, index) => {
+        btn.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-5px)';
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+        });
+        
+        // Add click effect
+        btn.addEventListener('click', function(e) {
+          this.classList.add('btn-click');
+          setTimeout(() => {
+            this.classList.remove('btn-click');
+          }, 300);
+        });
+      });
+      
+      // Water transition effect
+      const waterLinks = document.querySelectorAll('[data-water-transition]');
+      const waterTransition = document.getElementById('water-transition');
+      const bubblesContainer = document.getElementById('bubbles');
+      
+      waterLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const href = this.getAttribute('href');
+          
+          // Create bubbles
+          createBubbles();
+          
+          // Show transition
+          waterTransition.classList.add('active');
+          
+          // Navigate after animation
+          setTimeout(() => {
+            window.location.href = href;
+          }, 1500);
+        });
+      });
+      
+      function createBubbles() {
+        // Clear existing bubbles
+        bubblesContainer.innerHTML = '';
+        
+        // Create random bubbles
+        for (let i = 0; i < 30; i++) {
+          const bubble = document.createElement('div');
+          bubble.classList.add('bubble');
+          
+          // Random position, size and delay
+          const size = Math.random() * 50 + 10;
+          const left = Math.random() * 100;
+          const delay = Math.random() * 0.5;
+          
+          bubble.style.width = `${size}px`;
+          bubble.style.height = `${size}px`;
+          bubble.style.left = `${left}%`;
+          bubble.style.animationDelay = `${delay}s`;
+          
+          bubblesContainer.appendChild(bubble);
+        }
+      }
+      
+      // Clear any lingering transitions when the page loads
+      document.addEventListener('DOMContentLoaded', function() {
+        // Force remove active class from water transition
+        const waterTransition = document.getElementById('water-transition');
+        if (waterTransition) {
+          waterTransition.classList.remove('active', 'reverse');
+          
+          // Extra safety - hide after a short delay
+          setTimeout(() => {
+            waterTransition.style.opacity = '0';
+            waterTransition.style.visibility = 'hidden';
+            setTimeout(() => {
+              waterTransition.removeAttribute('style');
+            }, 300);
+          }, 100);
+        }
+      });
+      
+      // Theme toggle functionality
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeIcon = document.getElementById('theme-icon');
+      
+      // Check for saved theme preference or use device preference
+      const savedTheme = localStorage.getItem('battleship-theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.body.classList.add('dark-theme');
+        themeToggle.checked = true;
+        themeIcon.textContent = '🌙';
+      }
+      
+      // Toggle theme when switch is clicked
+      themeToggle.addEventListener('change', function() {
+        if (this.checked) {
+          document.body.classList.add('dark-theme');
+          localStorage.setItem('battleship-theme', 'dark');
+          themeIcon.textContent = '🌙';
+        } else {
+          document.body.classList.remove('dark-theme');
+          localStorage.setItem('battleship-theme', 'light');
+          themeIcon.textContent = '☀️';
+        }
+      });
+      
+      // Initialize ClickSpark with blue water droplet effect
+      document.addEventListener("DOMContentLoaded", function() {
+        const clickSpark = new ClickSpark({
+          sparkColor: '#4db8ff',
+          useRandomColors: true,
+          colorPalette: ['#4db8ff', '#00bfff', '#1e90ff', '#0073cf', '#005bb5'],
+          sparkSize: 6,
+          sparkCount: 20,
+          duration: 1200,
+          extraScale: 1.2,
+          gravity: 0.08,
+          isWater: true
+        });
+        clickSpark.init();
+      });
+    </script>
+    
+    <!-- Add water transition scripts -->
+    <script src="WaterTransition.js"></script>
+  </body>
+</html>

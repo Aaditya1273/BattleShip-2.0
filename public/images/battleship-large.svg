@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="800px" height="600px" viewBox="0 0 800 600" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Battleship</title>
+    <defs>
+        <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="shipGradient">
+            <stop stop-color="#4682b4" offset="0%"></stop>
+            <stop stop-color="#2f4f4f" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <!-- Main hull -->
+        <path d="M150,300 L650,300 L700,380 L100,380 Z" fill="url(#shipGradient)"/>
+        
+        <!-- Upper deck structure -->
+        <rect x="250" y="240" width="300" height="60" fill="#36454f"/>
+        
+        <!-- Command tower -->
+        <rect x="350" y="180" width="100" height="60" fill="#36454f"/>
+        <rect x="375" y="140" width="50" height="40" fill="#36454f"/>
+        
+        <!-- Gun turrets -->
+        <circle cx="200" cy="280" r="20" fill="#2f4f4f"/>
+        <rect x="190" y="265" width="20" height="40" fill="#2f4f4f"/>
+        
+        <circle cx="600" cy="280" r="20" fill="#2f4f4f"/>
+        <rect x="590" y="265" width="20" height="40" fill="#2f4f4f"/>
+        
+        <circle cx="400" cy="240" r="15" fill="#2f4f4f"/>
+        <rect x="395" y="220" width="10" height="30" fill="#2f4f4f"/>
+        
+        <!-- Waves -->
+        <path d="M0,400 Q100,390 200,400 T400,400 T600,400 T800,400 V600 H0 Z" fill="#0047ab" opacity="0.3"/>
+        <path d="M0,420 Q100,410 200,420 T400,420 T600,420 T800,420 V600 H0 Z" fill="#0047ab" opacity="0.2"/>
+        <path d="M0,440 Q100,430 200,440 T400,440 T600,440 T800,440 V600 H0 Z" fill="#0047ab" opacity="0.1"/>
+    </g>
+</svg>
