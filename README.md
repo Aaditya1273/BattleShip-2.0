@@ -1,5 +1,5 @@
 
-# 🚢 Battleship 2.0
+# 🚢 Battleship 2.0🎯
 
 A modern, animated Battleship game built with **Node.js**, **Express**, **Socket.IO**, and **Vanilla JS**.
 
