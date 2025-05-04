@@ -1,6 +1,3 @@
-Here's a polished and merged version of both **Battleship Game** descriptions into a single, professional, and appealing `README.md` format, combining the best of both with a clean structure:
-
----
 
 # 🚢 Battleship 2.0
 
