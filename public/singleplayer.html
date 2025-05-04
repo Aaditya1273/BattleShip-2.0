@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battleship - Single Player</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Montserrat&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="ClickSpark.js"></script>
+    <script src="WaterTransition.js"></script>
+    <script>
+      let gameMode = 'singlePlayer'
+    </script>
+    <script src="app.js" charset="utf-8"></script>
+  </head>
+  <body>
+    <!-- Theme Switch -->
+    <div class="theme-switch-container">
+      <span class="theme-label">Theme:</span>
+      <label class="theme-switch">
+        <input type="checkbox" id="theme-toggle">
+        <span class="theme-slider"></span>
+      </label>
+      <span class="theme-icon" id="theme-icon">☀️</span>
+    </div>
+    
+    <!-- Water Transition Container -->
+    <div class="water-transition" id="water-transition">
+      <div class="water-ripple"></div>
+      <div class="water-wave"></div>
+      <div class="bubbles" id="bubbles"></div>
+    </div>
+
+    <div class="game-container">
+      <div class="container hidden-info">
+        <div class="turn-display-container">
+          <span class="status-indicator"></span>
+          <h3 id="whose-go" class="info-text">Your Go</h3>
+        </div>
+        <h3 id="info" class="info-text"></h3>
+      </div>
+
+      <div class="container game-boards">
+        <div class="board-container">
+          <h3 class="board-title">Your Fleet</h3>
+          <div class="battleship-grid grid-user"></div>
+        </div>
+        <div class="board-container">
+          <h3 class="board-title">Computer Fleet</h3>
+          <div class="battleship-grid grid-computer"></div>
+        </div>
+      </div>
+
+      <div class="container ship-selection">
+        <div class="grid-display">
+          <div class="ship destroyer-container" draggable="true"><div id="destroyer-0"></div><div id="destroyer-1"></div></div>
+          <div class="ship submarine-container" draggable="true"><div id="submarine-0"></div><div id="submarine-1"></div><div id="submarine-2"></div></div>
+          <div class="ship cruiser-container" draggable="true"><div id="cruiser-0"></div><div id="cruiser-1"></div><div id="cruiser-2"></div></div>
+          <div class="ship battleship-container" draggable="true"><div id="battleship-0"></div><div id="battleship-1"></div><div id="battleship-2"></div><div id="battleship-3"></div></div>
+          <div class="ship carrier-container" draggable="true"><div id="carrier-0"></div><div id="carrier-1"></div><div id="carrier-2"></div><div id="carrier-3"></div><div id="carrier-4"></div></div>
+        </div>
+      </div>
+      
+      <div class="setup-buttons" id="setup-buttons">
+        <button id="start" class="btn">Start Game</button>
+        <button id="rotate" class="btn">Rotate Ships</button>
+      </div>
+      
+      <div class="instructions">
+        <p>Drag and drop your ships on your board. Click "Rotate Ships" to change orientation.</p>
+      </div>
+    </div>
+
+    <script>
+      // Theme toggle functionality
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeIcon = document.getElementById('theme-icon');
+      
+      // Check for saved theme preference or use device preference
+      const savedTheme = localStorage.getItem('battleship-theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.body.classList.add('dark-theme');
+        themeToggle.checked = true;
+        themeIcon.textContent = '🌙';
+      }
+      
+      // Toggle theme when switch is clicked
+      themeToggle.addEventListener('change', function() {
+        if (this.checked) {
+          document.body.classList.add('dark-theme');
+          localStorage.setItem('battleship-theme', 'dark');
+          themeIcon.textContent = '🌙';
+          
+          // Update grid styles for dark theme
+          document.querySelectorAll('.grid-computer > div').forEach(square => {
+            square.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--grid-bg');
+          });
+        } else {
+          document.body.classList.remove('dark-theme');
+          localStorage.setItem('battleship-theme', 'light');
+          themeIcon.textContent = '☀️';
+          
+          // Reset grid styles for light theme
+          document.querySelectorAll('.grid-computer > div').forEach(square => {
+            square.style.backgroundColor = '';
+          });
+        }
+      });
+
+      // Ensure the game elements styling is properly applied
+      document.addEventListener('DOMContentLoaded', function() {
+        // Make sure the setup-buttons are styled correctly
+        const setupButtons = document.getElementById('setup-buttons');
+        if (setupButtons) {
+          setupButtons.style.marginTop = '20px';
+          setupButtons.style.marginBottom = '20px';
+        }
+        
+        // Initialize ClickSpark with blue water effect for hits
+        const clickSpark = new ClickSpark({
+          sparkColor: '#1e90ff',
+          useRandomColors: true,
+          colorPalette: ['#4db8ff', '#00bfff', '#1e90ff', '#0073cf', '#005bb5'],
+          sparkSize: 7,
+          sparkCount: 15,
+          duration: 1000,
+          extraScale: 1.1,
+          gravity: 0.1,
+          isWater: true
+        });
+        clickSpark.init();
+      });
+    </script>
+  </body>
+</html>

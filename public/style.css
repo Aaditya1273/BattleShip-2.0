@@ -1,0 +1,3128 @@
+:root {
+  --primary-bg: #0c1521;
+  --secondary-bg: #162535;
+  --text-color: #e0e6ec;
+  --grid-bg: hsla(200, 80%, 20%, 0.8);
+  --grid-hover: hsla(200, 80%, 30%, 0.9);
+  --ship-bg: hsl(0, 0%, 30%);
+  --btn-bg: hsl(204, 80%, 40%);
+  --btn-hover: hsl(204, 80%, 50%);
+  --taken-border: #4d6d89;
+  --miss-color: #96b9d9;
+  --hit-color: #ff4c4c;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --active-grid: rgba(0, 255, 255, 0.2);
+  --ready-color: rgb(0, 255, 128);
+  --theme-transition: background-color 0.3s ease, color 0.3s ease;
+  --grid-line-color: rgba(72, 159, 222, 0.5);
+  --radar-color: rgba(0, 255, 255, 0.2);
+  --destroyer-color: #7b68ee;
+  --submarine-color: #4682b4;
+  --cruiser-color: #20b2aa;
+  --battleship-color: #6a5acd;
+  --carrier-color: #483d8b;
+}
+
+/* Make the light theme explicitly defined with its own color scheme */
+body:not(.dark-theme) {
+  --primary-bg: #e0f0ff;
+  --secondary-bg: #ffffff;
+  --text-color: #333333;
+  --grid-bg: hsla(200, 100%, 50%, 0.8);
+  --grid-hover: hsla(200, 90%, 65%, 0.8);
+  --ship-bg: hsl(0, 0%, 80%);
+  --btn-bg: hsl(204, 80%, 50%);
+  --btn-hover: hsl(204, 80%, 60%);
+  --taken-border: #aad7ff;
+  --miss-color: #ffffff;
+  --hit-color: #ff5959;
+  --shadow-color: rgba(0, 0, 0, 0.2);
+  --active-grid: rgba(0, 200, 255, 0.3);
+  --ready-color: rgb(0, 180, 0);
+  --grid-line-color: rgba(100, 180, 255, 0.5);
+  --radar-color: rgba(0, 150, 255, 0.15);
+}
+
+/* Ensure body transitions smoothly between themes */
+body {
+  margin: 0;
+  background-color: var(--primary-bg);
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(20, 60, 100, 0.25) 0%, transparent 80%),
+    linear-gradient(rgba(0, 20, 40, 0.6), rgba(0, 10, 30, 0.5)),
+    url('/images/battleship-large.svg');
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+  color: var(--text-color);
+  overflow-x: hidden;
+  font-family: 'Roboto', sans-serif;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  min-height: 100vh;
+}
+
+*, *::before, *::after {
+  font-family: 'Roboto', sans-serif;
+  box-sizing: border-box;
+}
+
+.battleship-grid,
+.grid-display,
+.ship,
+.taken {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.splash-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 66vh;
+  animation: fadeIn 0.8s ease;
+  background-color: rgba(0, 20, 40, 0.6);
+  padding: 3rem 2rem;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(72, 159, 222, 0.3);
+  backdrop-filter: blur(5px);
+  margin: 10vh auto 5vh auto;
+  max-width: 80%;
+  text-align: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.splash-title {
+  font-family: 'Bangers', cursive;
+  font-size: 10rem;
+  text-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+  animation: floatTitle 5s ease-in-out infinite;
+}
+
+@keyframes floatTitle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.btn {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  background: linear-gradient(to bottom, var(--btn-bg), hsl(204, 80%, 30%));
+  padding: 0.8em 1.8em;
+  min-width: 160px;
+  outline: none;
+  border: none;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 4px;
+  color: #ffffff;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3),
+              inset 0 0 3px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(0, 150, 255, 0.3);
+  text-align: center;
+}
+
+.btn:hover, .btn:focus {
+  background: linear-gradient(to bottom, var(--btn-hover), hsl(204, 80%, 35%));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4),
+              inset 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150px;
+  height: 150px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.3s, opacity 0.3s;
+}
+
+.btn:active::after {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.splash-btn {
+  font-size: 1.5rem;
+  padding: 0.8em 1.5em;
+  animation: fadeInButtons 1.2s ease forwards;
+  opacity: 0;
+  animation-delay: 0.5s;
+  min-width: 200px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  z-index: 1;
+}
+
+@keyframes fadeInButtons {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.splash-btn:first-child {
+  animation-delay: 0.3s;
+}
+
+.splash-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.2) 50%, 
+    rgba(255, 255, 255, 0) 100%
+  );
+  transition: all 0.6s ease;
+  z-index: -1;
+}
+
+.splash-btn:hover::before {
+  left: 100%;
+}
+
+.splash-btn:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 150, 255, 0.5);
+  letter-spacing: 1px;
+}
+
+/* Special active state for splash buttons */
+.splash-btn:active {
+  transform: translateY(2px) scale(0.98);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.1s ease;
+}
+
+/* Decorative elements that appear on hover */
+.splash-btn::after {
+  content: '';
+  position: absolute;
+  background: rgba(255, 255, 255, 0.1);
+  width: 10px;
+  height: 100%;
+  top: 0;
+  right: -30px;
+  transform: skewX(-30deg);
+  transition: all 0.4s ease;
+  opacity: 0;
+}
+
+.splash-btn:hover::after {
+  right: 105%;
+  opacity: 1;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  transition: opacity 0.3s ease;
+}
+
+.battleship-grid {
+  margin: 0;
+  display: grid;
+  background-color: var(--grid-bg);
+  grid-template-rows: repeat(10, 4.2vmin);
+  grid-template-columns: repeat(10, 4.2vmin);
+  box-shadow: 0 0 20px rgba(0, 150, 255, 0.3), 
+              inset 0 0 10px rgba(0, 200, 255, 0.2);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+  border: 2px solid var(--grid-line-color);
+  overflow: hidden;
+}
+
+@keyframes boardAppear {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.battleship-grid:hover {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  transform: translateY(-5px);
+}
+
+.grid-computer > .taken,
+.grid-computer > .boom {
+  background-color: var(--grid-bg) !important;
+  border-radius: 0 !important;
+  background-image: none !important;
+}
+
+/* Hide ship details on computer grid */
+.grid-computer .taken.destroyer,
+.grid-computer .taken.submarine,
+.grid-computer .taken.cruiser,
+.grid-computer .taken.battleship,
+.grid-computer .taken.carrier {
+  background-color: var(--grid-bg) !important;
+  background-image: none !important;
+}
+
+.taken,
+.ship {
+  position: relative;
+  background-color: var(--ship-bg);
+  transition: background-color 0.3s ease;
+}
+
+.taken.start.vertical,
+.taken.start.vertical::before {
+  border-top-left-radius: 50%;
+  border-top-right-radius: 50%;
+}
+
+.taken.end.vertical,
+.taken.end.vertical::before {
+  border-bottom-left-radius: 50%;
+  border-bottom-right-radius: 50%;
+}
+
+.taken.start.horizontal,
+.taken.start.horizontal::before {
+  border-top-left-radius: 50%;
+  border-bottom-left-radius: 50%;
+}
+
+.taken.end.horizontal,
+.taken.end.horizontal::before {
+  border-top-right-radius: 50%;
+  border-bottom-right-radius: 50%;
+}
+
+.taken.vertical::before,
+.taken.horizontal::before {
+  content: '';
+  position: absolute;
+  border: .3vmin solid var(--taken-border);
+  top: -1px;
+  bottom: -1px;
+  left: -1px;
+  right: -1px;
+}
+
+.taken.horizontal::before {
+  animation: ripplesY 3s linear infinite;
+  border-left: none;
+  border-right: none;
+  border-color: var(--taken-border);
+}
+
+.taken.vertical::before {
+  animation: ripplesX 3s linear infinite;
+  border-top: none;
+  border-bottom: none;
+  border-color: var(--taken-border);
+}
+
+@keyframes ripplesX {
+  0% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleX(1.5);
+  }
+}
+
+@keyframes ripplesY {
+  0% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleY(1.5);
+  }
+}
+
+.grid-display {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+  margin: 1rem 0;
+  width: 100%;
+  max-width: 500px;
+  background-color: rgba(0, 40, 80, 0.4);
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  animation: slideUpFade 0.5s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+@keyframes slideUpFade {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+}
+
+.grid-display:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.ship {
+  display: flex;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 10px;
+  background-color: transparent;
+}
+
+.ship > div {
+  width: 4.2vmin;
+  height: 4.2vmin;
+  border-radius: 2px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Fix ship appearance when vertical */
+.ship.vertical {
+  flex-direction: column;
+}
+
+.ship.vertical > div {
+  margin: 0;
+}
+
+/* Enhance ship hover effects */
+.grid-display .ship:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+  cursor: grab;
+}
+
+/* Ship type colors in selection area */
+.destroyer-container > div {
+  background-color: var(--destroyer-color);
+}
+
+.submarine-container > div,
+.cruiser-container > div {
+  background-color: var(--submarine-color);
+}
+
+.battleship-container > div {
+  background-color: var(--battleship-color);
+}
+
+.carrier-container > div {
+  background-color: var(--carrier-color);
+}
+
+.ship::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.1) 25%, 
+    transparent 50%,
+    rgba(255, 255, 255, 0.1) 75%, 
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.ship::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  right: 10%;
+  height: 20%;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.ship:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4),
+              0 0 15px rgba(0, 200, 255, 0.3);
+  cursor: grab;
+}
+
+.ship:active {
+  cursor: grabbing;
+  transform: translateY(-2px) scale(0.98);
+}
+
+.ship:nth-child(1) { animation-delay: 0.1s; }
+.ship:nth-child(2) { animation-delay: 0.2s; }
+.ship:nth-child(3) { animation-delay: 0.3s; }
+.ship:nth-child(4) { animation-delay: 0.4s; }
+.ship:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes shipAppear {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px) rotate(5deg);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+.battleship-grid div {
+  border: 1px solid hsla(200, 80%, 40%, 0.3);
+  transition: all 0.15s ease;
+  position: relative;
+  z-index: 3;
+}
+
+.battleship-grid div:hover {
+  background-color: var(--grid-hover);
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+  z-index: 4;
+}
+
+.destroyer-container {
+  --width: 2;
+  background-color: #7b68ee; /* Medium slate blue */
+  background-image: linear-gradient(to bottom, #9d93e9, #7b68ee);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  margin: 10px;
+}
+
+.destroyer-container-vertical {
+  --height: 2;
+  --width: 1;
+  background-image: none;
+  background-color: #7b68ee;
+}
+
+.submarine-container,
+.cruiser-container {
+  --width: 3;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  margin: 10px;
+}
+
+.submarine-container-vertical,
+.cruiser-container-vertical {
+  --height: 3;
+  --width: 1;
+}
+
+.battleship-container {
+  --width: 4;
+  background-color: #4682b4; /* Steel blue */
+  background-image: linear-gradient(to bottom, #6a9bc7, #4682b4);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  margin: 10px;
+}
+
+.battleship-container-vertical {
+  --height: 4;
+  --width: 1;
+  background-image: none;
+  background-color: #4682b4;
+}
+
+.carrier-container {
+  --width: 5;
+  background-color: #483d8b; /* Dark slate blue */
+  background-image: linear-gradient(to bottom, #6c60a1, #483d8b);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  margin: 10px;
+}
+
+.carrier-container-vertical {
+  --height: 5;
+  --width: 1;
+  background-image: none;
+  background-color: #483d8b;
+}
+
+.setup-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Better status display */
+.container.hidden-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto 2rem auto;
+  padding: 1.5rem;
+  background: rgba(0, 40, 80, 0.4);
+  border-radius: 8px;
+  border: 1px solid rgba(72, 159, 222, 0.3);
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.setup-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin: 0 auto 2rem auto;
+  width: 100%;
+  max-width: 500px;
+}
+
+.info-text {
+  text-align: center;
+  animation: pulse 1.5s ease infinite;
+  margin: 1rem 0;
+  padding: 0.8rem 1.5rem;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: #e6f7ff;
+  text-shadow: 0 0 10px rgba(0, 200, 255, 0.5);
+  position: relative;
+  display: inline-block;
+}
+
+/* Add decorative elements to the turn indicator */
+#whose-go {
+  background: rgba(0, 100, 180, 0.5);
+  border-radius: 5px;
+  border: 1px solid rgba(72, 159, 222, 0.4);
+  padding: 0.7rem 2rem;
+  box-shadow: 0 0 15px rgba(0, 150, 255, 0.2);
+  position: relative;
+  min-width: 180px;
+  text-align: center;
+  font-size: 1.2rem;
+  margin: 0.5rem 0;
+}
+
+#whose-go::before,
+#whose-go::after {
+  content: '•';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(0, 255, 255, 0.6);
+  font-size: 1.5rem;
+}
+
+#whose-go::before {
+  left: 15px;
+}
+
+#whose-go::after {
+  right: 15px;
+}
+
+/* Make the turn indicator more prominent when it's the player's turn */
+#whose-go[data-turn="player"] {
+  background: rgba(0, 150, 100, 0.3);
+  border-color: rgba(0, 255, 128, 0.4);
+  box-shadow: 0 0 15px rgba(0, 255, 128, 0.2);
+}
+
+/* Style for computer's turn */
+#whose-go[data-turn="computer"],
+#whose-go[data-turn="enemy"] {
+  background: rgba(180, 30, 30, 0.3);
+  border-color: rgba(255, 100, 100, 0.4);
+  box-shadow: 0 0 15px rgba(255, 100, 100, 0.2);
+}
+
+/* Enhanced pulse animation for turn indicators */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(0.98); }
+}
+
+.miss,
+.boom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.boom::after,
+.miss::after {
+  content: '';
+  position: absolute;
+  border-radius: 100%;
+  animation-fill-mode: forwards;
+}
+
+.miss::after {
+  width: 2vmin;
+  height: 2vmin;
+  background-color: var(--miss-color);
+  animation: miss 0.5s ease-out forwards, ripple 2s infinite;
+}
+
+.boom::after {
+  width: 3vmin;
+  height: 3vmin;
+  background-color: var(--hit-color);
+  animation: boom 0.5s ease-out forwards, pulseRed 2s infinite;
+}
+
+.miss::before {
+  content: '';
+  position: absolute;
+  width: 4vmin;
+  height: 4vmin;
+  border-radius: 100%;
+  background-color: rgba(255, 255, 255, 0.3);
+  animation: missRipple 1s ease-out forwards;
+}
+
+@keyframes missRipple {
+  0% {
+    opacity: 1;
+    transform: scale(0.1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+.boom {
+  position: relative;
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+@keyframes hit {
+  0% {
+    opacity: 0.6;
+    transform: scale(0.1);
+  }
+  
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes boom {
+  0% {
+    opacity: 0.8;
+    transform: scale(0);
+  }
+  
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.player {
+  margin: 2rem;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+  animation: fadeIn 0.8s ease;
+}
+
+.connected, .ready {
+  font-weight: normal;
+  opacity: 0.2;
+  margin: 0.5rem;
+  transition: opacity 0.5s ease, color 0.5s ease;
+}
+
+.connected.active,
+.ready.active {
+  opacity: 1;
+  color: var(--ready-color);
+  text-shadow: 0 0 5px rgba(0, 180, 0, 0.5);
+  animation: pulse 1.5s infinite;
+}
+
+@media (max-width: 768px) {
+  .splash-title {
+    font-size: 6rem;
+  }
+  
+  .splash-container {
+    padding: 2rem 1.5rem;
+    height: auto;
+    min-height: 60vh;
+    margin: 8vh auto 5vh auto;
+    max-width: 90%;
+  }
+  
+  .game-logo {
+    padding: 15px 25px;
+  }
+  
+  .logo-text {
+    font-size: 2.8rem;
+  }
+  
+  .logo-subtitle {
+    font-size: 0.9rem;
+    margin: 0.3rem 0 2rem 0;
+  }
+  
+  .splash-buttons {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .splash-btn {
+    margin: 0;
+    font-size: 1.3rem;
+    min-width: 180px;
+  }
+  
+  .battleship-grid {
+    grid-template-rows: repeat(10, 3.5vmin);
+    grid-template-columns: repeat(10, 3.5vmin);
+  }
+  
+  .ship > div {
+    width: 3.5vmin;
+    height: 3.5vmin;
+  }
+  
+  .ship {
+    width: calc(3.5vmin * var(--width, 1));
+    height: calc(3.5vmin * var(--height, 1));
+  }
+}
+
+@media (max-width: 480px) {
+  .game-title {
+    font-size: 2.5rem;
+  }
+  
+  .splash-container {
+    padding: 1.5rem 1rem;
+    margin: 5vh auto;
+    max-width: 95%;
+  }
+  
+  .game-logo {
+    padding: 10px 20px;
+  }
+  
+  .logo-text {
+    font-size: 2.5rem;
+  }
+  
+  .logo-subtitle {
+    font-size: 0.8rem;
+    margin: 0.2rem 0 1.5rem 0;
+    letter-spacing: 2px;
+  }
+  
+  .splash-btn {
+    font-size: 1.2rem;
+    min-width: 150px;
+  }
+  
+  .battleship-grid {
+    grid-template-rows: repeat(10, 3vmin);
+    grid-template-columns: repeat(10, 3vmin);
+  }
+  
+  .ship > div {
+    width: 3vmin;
+    height: 3vmin;
+  }
+  
+  .ship {
+    width: calc(3vmin * var(--width, 1));
+    height: calc(3vmin * var(--height, 1));
+  }
+}
+
+.game-starting .grid-display {
+  animation: slideOutBottom 0.5s ease forwards;
+}
+
+@keyframes slideOutBottom {
+  to { 
+    opacity: 0; 
+    transform: translateY(50px);
+  }
+}
+
+.winner {
+  animation: winner 1s ease infinite alternate;
+  position: relative;
+}
+
+@keyframes winner {
+  from { 
+    box-shadow: 0 0 20px rgba(0, 255, 128, 0.5),
+                inset 0 0 10px rgba(0, 255, 128, 0.3);
+    transform: scale(1);
+  }
+  to { 
+    box-shadow: 0 0 40px rgba(0, 255, 128, 0.8),
+                inset 0 0 20px rgba(0, 255, 128, 0.5); 
+    transform: scale(1.03);
+  }
+}
+
+/* Improved layout for game container */
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90%;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: rgba(13, 33, 53, 0.85);
+  border-radius: 12px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5),
+              0 0 25px rgba(0, 100, 255, 0.2);
+  border: 1px solid rgba(72, 159, 222, 0.3);
+  backdrop-filter: blur(10px);
+  transition: var(--theme-transition);
+}
+
+/* Reset all children */
+.game-container > * {
+  width: 100%;
+}
+
+/* New clean rules for ordering */
+.game-container > .hidden-info {
+  order: 1;
+  width: 100%;
+  max-width: 400px; /* Reduced width */
+  margin: 0 auto 1.5rem;
+}
+
+.game-container > .game-boards {
+  order: 2;
+}
+
+.game-container > .ship-selection {
+  order: 3;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.game-container > #setup-buttons,
+.game-container > .setup-buttons {
+  order: 4;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.game-container > .instructions {
+  order: 5;
+  margin-top: auto; /* Push to bottom */
+  padding-top: 2rem;
+  margin-bottom: 0;
+  text-align: center;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.game-title {
+  font-family: 'Bangers', cursive;
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+  animation: floatTitle 5s ease-in-out infinite;
+}
+
+/* Improved player status indicators */
+.player-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: rgba(0, 20, 40, 0.6);
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.player-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: rgba(0, 40, 80, 0.5);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.player-indicator:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.player-name {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.vs {
+  margin: 0 20px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  color: var(--text-color);
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #777;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.status-dot.connected {
+  background-color: #777;
+}
+
+.status-dot.active {
+  background-color: #4CAF50;
+  box-shadow: 0 0 8px #4CAF50;
+}
+
+.status-dot.ready {
+  background-color: #FFD700;
+  box-shadow: 0 0 10px #FFD700;
+}
+
+/* Animation for connection status */
+@keyframes pulse-connection {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+.status-dot.active {
+  animation: pulse-connection 2s infinite;
+}
+
+/* Animation for ready status */
+@keyframes pulse-ready {
+  0% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 5px #FFD700; }
+  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 15px #FFD700; }
+  100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 5px #FFD700; }
+}
+
+.status-dot.ready {
+  animation: pulse-ready 1.5s infinite;
+}
+
+/* Ready notification */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Player indicator ready state */
+.player-indicator.ready {
+  border: 2px solid #FFD700;
+  background-color: rgba(255, 215, 0, 0.1);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Add animation for connection status */
+@keyframes pulse-connection {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+.status-dot.active {
+  animation: pulse-connection 2s infinite;
+}
+
+/* Game code display */
+.game-code-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  background-color: rgba(0, 40, 80, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  border: 1px solid rgba(72, 159, 222, 0.2);
+}
+
+#game-code-value {
+  font-weight: bold;
+  margin: 0 0.5rem;
+  letter-spacing: 1px;
+}
+
+.btn-small {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.9rem;
+  background: linear-gradient(to bottom, var(--btn-bg), hsl(204, 80%, 30%));
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-small:hover {
+  background: linear-gradient(to bottom, var(--btn-hover), hsl(204, 80%, 35%));
+}
+
+.board-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  background: rgba(0, 40, 80, 0.4);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), 
+              inset 0 0 10px rgba(0, 150, 255, 0.1);
+  border: 1px solid rgba(72, 159, 222, 0.2);
+  transition: all 0.3s ease;
+}
+
+.board-container:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3),
+              0 0 15px rgba(0, 150, 255, 0.3);
+  transform: translateY(-3px);
+}
+
+.board-title {
+  margin: 0 0 1.2rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-align: center;
+  color: #e6f7ff;
+  text-shadow: 0 0 10px rgba(0, 150, 255, 0.5);
+  position: relative;
+  display: inline-block;
+  padding: 0 15px;
+  text-transform: uppercase;
+}
+
+.ship-selection {
+  margin-top: 2rem;
+  perspective: 1000px;
+}
+
+.instructions {
+  margin-top: 0.5rem;
+  text-align: center;
+  max-width: 600px;
+  padding: 1.5rem;
+  background-color: rgba(0, 40, 80, 0.3);
+  border-radius: 8px;
+  border-top: 1px solid rgba(72, 159, 222, 0.3);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+  transition: var(--theme-transition);
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.back-link {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.footer {
+  text-align: center;
+  padding: 1rem;
+  margin-top: 2rem;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.footer a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted;
+}
+
+.footer a:hover {
+  opacity: 0.8;
+}
+
+.subtitle {
+  margin-top: 0.5rem;
+  font-size: 1.2rem;
+  opacity: 0.8;
+  animation: fadeIn 1s ease;
+  animation-delay: 0.8s;
+  opacity: 0;
+  animation-fill-mode: forwards;
+  padding: 1rem;
+  max-width: 600px;
+}
+
+.splash-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 2rem;
+  gap: 1.5rem;
+}
+
+/* Button click animation */
+.btn-click {
+  animation: buttonClick 0.3s ease;
+}
+
+@keyframes buttonClick {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+  .game-title {
+    font-size: 3rem;
+  }
+  
+  .game-boards {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .splash-buttons {
+    flex-direction: column;
+  }
+  
+  .splash-btn {
+    margin: 0.5rem;
+  }
+  
+  .splash-btn:first-child {
+    margin: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-title {
+    font-size: 2.5rem;
+  }
+  
+  .battleship-grid {
+    grid-template-rows: repeat(10, 3vmin);
+    grid-template-columns: repeat(10, 3vmin);
+  }
+  
+  .ship > div {
+    width: 3vmin;
+    height: 3vmin;
+  }
+  
+  .ship {
+    width: calc(3vmin * var(--width, 1));
+    height: calc(3vmin * var(--height, 1));
+  }
+}
+
+/* Loading animation */
+.loading-wave {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50px;
+}
+
+.loading-bar {
+  width: 5px;
+  height: 20px;
+  margin: 0 5px;
+  background-color: hsl(30, 100%, 50%);
+  border-radius: 5px;
+  animation: loading-wave-animation 1s ease-in-out infinite;
+}
+
+.loading-bar:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.loading-bar:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.loading-bar:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.loading-bar:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+@keyframes loading-wave-animation {
+  0% { transform: scale(1); }
+  50% { transform: scale(2); }
+  100% { transform: scale(1); }
+}
+
+/* Ship styling with colors instead of images */
+.taken.destroyer {
+  background-color: var(--destroyer-color);
+}
+
+.taken.submarine {
+  background-color: var(--submarine-color);
+}
+
+.taken.cruiser {
+  background-color: var(--cruiser-color);
+}
+
+.taken.battleship {
+  background-color: var(--battleship-color);
+}
+
+.taken.carrier {
+  background-color: var(--carrier-color);
+}
+
+/* For vertical ships */
+.taken.vertical.destroyer {
+  background-color: var(--destroyer-color);
+}
+
+.taken.vertical.submarine {
+  background-color: var(--submarine-color);
+}
+
+.taken.vertical.cruiser {
+  background-color: var(--cruiser-color);
+}
+
+.taken.vertical.battleship {
+  background-color: var(--battleship-color);
+}
+
+.taken.vertical.carrier {
+  background-color: var(--carrier-color);
+}
+
+/* Game UI improvements */
+.game-stats {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: var(--secondary-bg);
+  border-radius: 10px;
+  box-shadow: 0 2px 10px var(--shadow-color);
+  transition: var(--theme-transition);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+/* Enhanced grid labels */
+.grid-labels-x {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  padding: 0 2vmin;
+}
+
+.grid-labels-y {
+  position: absolute;
+  left: 0;
+  top: 2.5rem;
+  height: calc(10 * 4.6vmin);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.grid-label {
+  font-size: 0.8rem;
+  color: var(--text-color);
+  opacity: 0.7;
+  transition: var(--theme-transition);
+}
+
+/* Game modal */
+.game-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.game-modal.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-content {
+  background-color: var(--secondary-bg);
+  padding: 2rem;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+  transform: scale(0.8);
+  transition: transform 0.3s ease;
+  max-width: 90%;
+  width: 400px;
+}
+
+.game-modal.active .modal-content {
+  transform: scale(1);
+}
+
+.modal-title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Ship showcase in selection */
+.ship-showcase {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: var(--secondary-bg);
+  border-radius: 10px;
+  box-shadow: 0 2px 10px var(--shadow-color);
+  transition: var(--theme-transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.showcase-title {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.ship-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.ship-card {
+  padding: 0.5rem;
+  border-radius: 5px;
+  background-color: var(--primary-bg);
+  transition: var(--theme-transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120px;
+}
+
+.ship-name {
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.ship-image {
+  height: 60px;
+  object-fit: contain;
+}
+
+/* Theme Switch */
+.theme-switch-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 8px 12px;
+  border-radius: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+body:not(.dark-theme) .theme-switch-container {
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dark-theme .theme-switch-container {
+  background-color: rgba(13, 33, 53, 0.8);
+  color: #e0e6ec;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.theme-label {
+  margin-right: 8px;
+  font-size: 0.8rem;
+}
+
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.theme-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.theme-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .theme-slider {
+  background-color: #2196F3;
+}
+
+input:focus + .theme-slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .theme-slider:before {
+  transform: translateX(26px);
+}
+
+.theme-icon {
+  margin-left: 8px;
+  font-size: 14px;
+}
+
+/* Ensure consistent grid colors in dark theme */
+.dark-theme .battleship-grid div {
+  background-color: var(--grid-bg);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-theme .battleship-grid div:hover {
+  background-color: var(--grid-hover);
+}
+
+/* Fix for computer grid cells */
+.dark-theme .grid-computer > div {
+  background-color: var(--grid-bg) !important;
+}
+
+.dark-theme .grid-computer > .taken,
+.dark-theme .grid-computer > .boom {
+  background-color: var(--grid-bg) !important;
+}
+
+/* Make sure all ship cells are consistently styled */
+.dark-theme .ship {
+  background-color: var(--ship-bg);
+}
+
+/* Ensure the grid hover state is consistent */
+.dark-theme .battleship-grid div:hover {
+  background-color: var(--grid-hover);
+}
+
+/* Ship details */
+.destroyer-container::after {
+  content: '⚓ DESTROYER';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+}
+
+.submarine-container::after {
+  content: '⚓ SUBMARINE';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+}
+
+.cruiser-container::after {
+  content: '⚓ CRUISER';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+}
+
+.battleship-container::after {
+  content: '⚓ BATTLESHIP';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+}
+
+.carrier-container::after {
+  content: '⚓ CARRIER';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+}
+
+/* For vertical ships */
+.destroyer-container-vertical,
+.submarine-container-vertical,
+.cruiser-container-vertical,
+.battleship-container-vertical,
+.carrier-container-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+}
+
+.destroyer-container-vertical {
+  height: calc(4.2vmin * 2);
+  width: 4.2vmin;
+}
+
+.submarine-container-vertical,
+.cruiser-container-vertical {
+  height: calc(4.2vmin * 3);
+  width: 4.2vmin;
+}
+
+.battleship-container-vertical {
+  height: calc(4.2vmin * 4);
+  width: 4.2vmin;
+}
+
+.carrier-container-vertical {
+  height: calc(4.2vmin * 5);
+  width: 4.2vmin;
+}
+
+/* Make vertical ship cells stack properly */
+.ship.vertical > div {
+  margin: 0;
+  padding: 0;
+  height: 4.2vmin;
+  width: 4.2vmin;
+}
+
+/* Ship details for placed ships */
+.taken.destroyer,
+.taken.submarine,
+.taken.cruiser,
+.taken.battleship,
+.taken.carrier {
+  position: relative;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.taken.destroyer {
+  background-color: var(--destroyer-color);
+}
+
+.taken.submarine {
+  background-color: var(--submarine-color);
+}
+
+.taken.cruiser {
+  background-color: var(--cruiser-color);
+}
+
+.taken.battleship {
+  background-color: var(--battleship-color);
+}
+
+.taken.carrier {
+  background-color: var(--carrier-color);
+}
+
+/* Ship highlight effects */
+.taken.start::before,
+.taken.end::before {
+  content: '';
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.3);
+  z-index: 5;
+}
+
+.taken.start.horizontal::before {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 25%;
+  border-top-left-radius: 40%;
+  border-bottom-left-radius: 40%;
+}
+
+.taken.end.horizontal::before {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 25%;
+  border-top-right-radius: 40%;
+  border-bottom-right-radius: 40%;
+}
+
+.taken.start.vertical::before {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 25%;
+  border-top-left-radius: 40%;
+  border-top-right-radius: 40%;
+}
+
+.taken.end.vertical::before {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 25%;
+  border-bottom-left-radius: 40%;
+  border-bottom-right-radius: 40%;
+}
+
+/* Logo styling for the game */
+.game-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding: 20px 30px;
+  border-radius: 8px;
+  background: linear-gradient(to bottom, rgba(13, 33, 53, 0.8), rgba(8, 20, 35, 0.9));
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 
+              inset 0 0 5px rgba(72, 159, 222, 0.5);
+  border: 1px solid rgba(72, 159, 222, 0.3);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.game-logo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, 
+    transparent, 
+    rgba(72, 159, 222, 0.5), 
+    transparent
+  );
+}
+
+.logo-text {
+  font-family: 'Bangers', cursive;
+  font-size: 3.5rem;
+  text-shadow: 0 0 10px rgba(0, 200, 255, 0.5),
+               0 0 20px rgba(0, 150, 255, 0.3);
+  margin: 0;
+  position: relative;
+  color: #e6f7ff;
+  letter-spacing: 3px;
+  line-height: 1.2;
+}
+
+.logo-icon {
+  font-size: 2.5rem;
+  margin-right: 0.8rem;
+  color: #4db8ff;
+  text-shadow: 0 0 10px rgba(0, 200, 255, 0.7);
+}
+
+.logo-subtitle {
+  font-size: 1rem;
+  opacity: 0.8;
+  margin: 0.5rem 0 2.5rem 0;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #e6f7ff;
+  position: relative;
+}
+
+/* Ship cannon/gun animation */
+@keyframes cannon {
+  0% { opacity: 0; transform: scale(0); }
+  50% { opacity: 1; transform: scale(1.5); }
+  100% { opacity: 0; transform: scale(2); }
+}
+
+.ship-gun {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #ff4500;
+  border-radius: 50%;
+  z-index: 10;
+  animation: cannon 1.5s ease-out infinite;
+  display: none;
+}
+
+.boom .ship-gun {
+  display: block;
+}
+
+/* Add grid scanning effect */
+.battleship-grid::before {
+  content: '';
+  position: absolute;
+  top: -150%;
+  left: -150%;
+  height: 400%;
+  width: 400%;
+  background: linear-gradient(
+    transparent, 
+    rgba(0, 255, 255, 0.1), 
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: gridScan 10s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Grid scanning animation */
+@keyframes gridScan {
+  0% {
+    top: -150%;
+    left: -150%;
+  }
+  100% {
+    top: 100%;
+    left: 100%;
+  }
+}
+
+.battleship-grid::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 9.5%,
+    var(--grid-line-color) 9.5%,
+    var(--grid-line-color) 10%
+  ),
+  repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 9.5%,
+    var(--grid-line-color) 9.5%,
+    var(--grid-line-color) 10%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Add radar effect to active grid */
+.active-grid {
+  position: relative;
+}
+
+.active-grid::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  background: radial-gradient(circle, 
+    var(--radar-color) 0%, 
+    transparent 70%
+  );
+  animation: radarPulse 3s infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes radarPulse {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.5);
+  }
+  50% { 
+    opacity: 0.7; 
+  }
+  100% { 
+    opacity: 0; 
+    transform: scale(1.5);
+  }
+}
+
+/* Move status info above the game boards */
+.turn-display-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+.status-indicator {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  left: 28%;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: pulse 1.5s infinite;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.player-turn .status-indicator {
+  background-color: rgba(0, 255, 128, 0.8);
+  box-shadow: 0 0 10px rgba(0, 255, 128, 0.5);
+}
+
+.computer-turn .status-indicator, 
+.enemy-turn .status-indicator {
+  background-color: rgba(255, 100, 100, 0.8);
+  box-shadow: 0 0 10px rgba(255, 100, 100, 0.5);
+}
+
+/* Add transitions to elements that should change with theme */
+.battleship-grid,
+.game-container,
+.ship,
+.btn,
+.hidden-info,
+.game-logo,
+.board-title,
+#whose-go,
+.splash-container {
+  transition: background-color 0.5s ease, 
+              color 0.5s ease, 
+              box-shadow 0.5s ease,
+              border-color 0.5s ease;
+}
+
+/* Ensure computer grid cells specifically transition smoothly */
+.grid-computer > div {
+  transition: background-color 0.5s ease, border-color 0.5s ease;
+}
+
+/* Game boards container - horizontal layout */
+.container.game-boards {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2.5rem;
+  margin: 1rem 0 2rem 0;
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* Ship selection container - improved display */
+.container.ship-selection {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 800px;
+  margin: 0.5rem auto 1.5rem auto;
+  padding: 1.5rem;
+  background-color: rgba(0, 40, 80, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(72, 159, 222, 0.2);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Multiplayer player alignment */
+.player-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.player {
+  margin: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.player-info {
+  text-align: center;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.player-label {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Create a new class for ship rotations that doesn't conflict with the placement */
+.ship.vertical {
+  display: flex;
+  flex-direction: column;
+  height: calc(4.2vmin * var(--height, 1));
+  width: calc(4.2vmin * var(--width, 1));
+}
+
+/* Animation for ship rotation */
+@keyframes rotate-ship {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.1) rotate(90deg); transform-origin: center; }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.rotate-ship {
+  animation: rotate-ship 0.5s ease;
+}
+
+/* Improve styling for vertical ships on the grid */
+.taken.vertical {
+  display: block;
+  border-radius: 0;
+  margin: 0;
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+/* Ensure all ship parts connect visually */
+.destroyer-container-vertical div,
+.submarine-container-vertical div,
+.cruiser-container-vertical div,
+.battleship-container-vertical div,
+.carrier-container-vertical div {
+  margin-top: -1px !important;
+  margin-bottom: -1px !important;
+}
+
+/* Make ships remain colored when vertical */
+.taken.vertical.destroyer { background-color: var(--destroyer-color) !important; }
+.taken.vertical.submarine { background-color: var(--submarine-color) !important; }
+.taken.vertical.cruiser { background-color: var(--cruiser-color) !important; }
+.taken.vertical.battleship { background-color: var(--battleship-color) !important; }
+.taken.vertical.carrier { background-color: var(--carrier-color) !important; }
+
+/* Fix start and rotate button sizes to be consistent */
+#start, #rotate {
+  min-width: 150px;
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  margin: 10px;
+}
+
+/* Ensure connected vertical ships */
+.taken.vertical {
+  border-radius: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.2) !important;
+}
+
+.taken.start.vertical {
+  border-top-left-radius: 5px !important;
+  border-top-right-radius: 5px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.taken.end.vertical {
+  border-bottom-left-radius: 5px !important;
+  border-bottom-right-radius: 5px !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Ship connection styling */
+.taken.horizontal {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+}
+
+/* Add ship part highlights */
+.taken.horizontal::before,
+.taken.vertical::before {
+  content: '';
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  left: 20%;
+  top: 20%;
+  pointer-events: none;
+}
+
+/* Add effect for ship placement */
+@keyframes shipPlaced {
+  0% { transform: scale(1.2); box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); }
+  50% { transform: scale(0.95); box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); }
+  100% { transform: scale(1); box-shadow: none; }
+}
+
+.ship-placed-effect {
+  animation: shipPlaced 0.6s ease forwards;
+}
+
+/* Add better highlighting for dragging ships */
+.drag-over {
+  background-color: rgba(0, 255, 0, 0.2) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5) !important;
+  transform: scale(1.1);
+  z-index: 100;
+}
+
+/* Add curved ends to ships */
+/* Horizontal ship styling */
+.taken.start.horizontal {
+  border-top-left-radius: 8px !important;
+  border-bottom-left-radius: 8px !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.taken.end.horizontal {
+  border-top-right-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+/* Vertical ship styling */
+.taken.start.vertical {
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.taken.end.vertical {
+  border-bottom-left-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+/* Add shading to create 3D effect */
+.taken.start.horizontal::before,
+.taken.end.horizontal::before,
+.taken.start.vertical::before,
+.taken.end.vertical::before {
+  content: '';
+  position: absolute;
+  width: 75%;
+  height: 75%;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  left: 12.5%;
+  top: 12.5%;
+  pointer-events: none;
+}
+
+/* Add slight shadow to enhance 3D look */
+.taken {
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Add depth to ships */
+.taken.destroyer, 
+.taken.submarine, 
+.taken.cruiser, 
+.taken.battleship, 
+.taken.carrier {
+  background-image: linear-gradient(to bottom right, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(0, 0, 0, 0) 30%, 
+    rgba(0, 0, 0, 0.3) 100%) !important;
+}
+
+/* Make ships in selection area have curved ends */
+/* Horizontal ships */
+.ship > div:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.ship > div:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Vertical ships */
+.ship.vertical > div:first-child {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.ship.vertical > div:last-child {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* Add gradient to ships in selection area */
+.destroyer-container > div,
+.submarine-container > div,
+.cruiser-container > div,
+.battleship-container > div,
+.carrier-container > div {
+  background-image: linear-gradient(to bottom right, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(0, 0, 0, 0) 30%, 
+    rgba(0, 0, 0, 0.3) 100%);
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Add highlight dot to ship parts */
+.ship > div::after {
+  content: '';
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  left: 25%;
+  top: 25%;
+  pointer-events: none;
+}
+
+/* Improve connection between ship parts */
+.taken.horizontal + .taken.horizontal,
+.taken.vertical + .taken.vertical {
+  margin: 0 !important;
+}
+
+/* Horizontal ships - remove gaps */
+.taken.horizontal {
+  margin-right: -1px !important;
+}
+
+/* Vertical ships - remove gaps */
+.taken.vertical {
+  margin-bottom: -1px !important;
+}
+
+/* Add smooth transitions */
+.taken, .ship > div {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Add hover effect to ships */
+.taken:hover {
+  transform: scale(1.1);
+  z-index: 5;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Make ship selection more attractive */
+.grid-display {
+  background-color: rgba(0, 40, 80, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.grid-display:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Improve the ship containers in selection area */
+.destroyer-container,
+.submarine-container,
+.cruiser-container,
+.battleship-container,
+.carrier-container {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  margin: 10px;
+}
+
+/* Refine curved ends for ships in selection area */
+.ship > div:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.ship > div:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Refine vertical ship ends */
+.ship.vertical > div:first-child {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.ship.vertical > div:last-child {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* Add ship labels */
+.destroyer-container::after,
+.submarine-container::after,
+.cruiser-container::after,
+.battleship-container::after,
+.carrier-container::after {
+  content: attr(data-label);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #000;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+  pointer-events: none;
+  white-space: nowrap;
+  text-transform: uppercase;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+/* Fix the ships on the grid */
+.taken.start.horizontal {
+  border-top-left-radius: 8px !important;
+  border-bottom-left-radius: 8px !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.taken.end.horizontal {
+  border-top-right-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.taken.start.vertical {
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.taken.end.vertical {
+  border-bottom-left-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+/* Button hover animations */
+.btn, #rotate, #start, .splash-btn {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Pulse effect on hover */
+.btn:hover, #rotate:hover, #start:hover, .splash-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 14px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 150, 255, 0.3);
+}
+
+/* Glow effect on hover */
+.btn:hover::before, #rotate:hover::before, #start:hover::before, .splash-btn:hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, 
+                             rgba(255, 255, 255, 0.2) 0%, 
+                             rgba(255, 255, 255, 0) 50%, 
+                             rgba(255, 255, 255, 0) 100%);
+  transition: all 0.3s ease;
+}
+
+/* Active state for buttons */
+.btn:active, #rotate:active, #start:active, .splash-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Special effect for splash buttons (singleplayer, multiplayer) */
+.splash-btn:hover {
+  background-color: rgba(72, 159, 222, 0.8);
+  color: white;
+}
+
+/* Ripple effect for buttons on click */
+@keyframes ripple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.5;
+  }
+  100% {
+    width: 200%;
+    height: 200%;
+    opacity: 0;
+  }
+}
+
+.btn-ripple {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: ripple 0.6s linear;
+  pointer-events: none;
+}
+
+/* Border pulse animation for splash buttons */
+@keyframes borderPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 150, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 150, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 150, 255, 0);
+  }
+}
+
+/* More distinctive hover effects for singleplayer and multiplayer */
+.splash-btn:nth-child(1):hover {
+  background-color: rgba(25, 118, 210, 0.9);
+  border-color: rgba(25, 118, 210, 0.5);
+}
+
+.splash-btn:nth-child(2):hover {
+  background-color: rgba(76, 175, 80, 0.9);
+  border-color: rgba(76, 175, 80, 0.5);
+}
+
+/* Button text effects */
+.splash-btn:hover span {
+  display: inline-block;
+  animation: textPulse 1.5s infinite;
+}
+
+@keyframes textPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Shine effect for buttons */
+.btn-shine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: skewX(-20deg);
+  animation: shineEffect 1s ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes shineEffect {
+  0% { left: -50px; opacity: 0; }
+  20% { opacity: 0.5; }
+  100% { left: 120%; opacity: 0; }
+}
+
+/* Page transition effect */
+.page-transition {
+  animation: fadeOut 0.6s ease forwards;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Better anchor button styling */
+a.splash-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Prevent button scale from affecting layout */
+.splash-buttons {
+  padding: 5px;
+}
+
+/* Water transition effect for page navigation */
+.water-transition {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.water-transition.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.water-transition .water-ripple {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, 
+    rgba(0, 150, 255, 0.8) 0%, 
+    rgba(0, 80, 180, 0.9) 40%, 
+    rgba(0, 20, 80, 0.95) 80%);
+  transform: scale(0);
+  transform-origin: center;
+  animation: waterRipple 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.water-transition.reverse .water-ripple {
+  animation: waterRippleReverse 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.water-transition .water-wave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.water-transition .water-wave::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23005c99" fill-opacity="0.7" d="M0,192L48,181.3C96,171,192,149,288,154.7C384,160,480,192,576,202.7C672,213,768,203,864,202.7C960,203,1056,213,1152,208C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+  background-size: 100% 100%;
+  animation: waveMotion 3s ease-in-out infinite alternate;
+}
+
+.water-transition.reverse .water-wave::before {
+  animation: waveMotionReverse 3s ease-in-out infinite alternate;
+}
+
+.water-transition .water-wave::after {
+  content: '';
+  position: absolute;
+  top: 30%;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%230078b6" fill-opacity="0.5" d="M0,128L48,128C96,128,192,128,288,144C384,160,480,192,576,197.3C672,203,768,181,864,154.7C960,128,1056,96,1152,106.7C1248,117,1344,171,1392,197.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+  background-size: 100% 100%;
+  animation: waveMotion 5s ease-in-out infinite;
+}
+
+.water-transition.reverse .water-wave::after {
+  animation: waveMotionReverse 5s ease-in-out infinite;
+}
+
+/* Water bubbles */
+.water-transition .bubbles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.water-transition .bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  animation: bubbleRise 1.5s ease-in-out forwards;
+}
+
+@keyframes waterRipple {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 1;
+  }
+}
+
+@keyframes waterRippleReverse {
+  0% {
+    transform: scale(2);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes waveMotion {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  100% {
+    transform: translateX(-25%) translateY(-5%);
+  }
+}
+
+@keyframes waveMotionReverse {
+  0% {
+    transform: translateX(-25%) translateY(-5%);
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+}
+
+@keyframes bubbleRise {
+  0% {
+    transform: translateY(100%) scale(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-100vh) scale(1);
+    opacity: 0;
+  }
+}
+
+.water-transition.reverse .bubble {
+  animation: bubbleFall 1.5s ease-in-out forwards;
+}
+
+@keyframes bubbleFall {
+  0% {
+    transform: translateY(-100vh) scale(1);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(100%) scale(0);
+    opacity: 0;
+  }
+}
+
+/* Water entrance animation */
+.water-entrance {
+  animation: riseFromWater 1.5s ease-in-out;
+}
+
+@keyframes riseFromWater {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+    filter: blur(10px) brightness(0.7);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0) brightness(1);
+  }
+}
+
+/* Water entrance overlay */
+.water-entrance::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(0deg, 
+    rgba(0, 120, 215, 0.2) 0%, 
+    rgba(0, 0, 0, 0) 50%);
+  pointer-events: none;
+  z-index: 9990;
+  animation: waterOverlayFade 2s ease-in-out forwards;
+}
+
+@keyframes waterOverlayFade {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+
+/* Water droplets effect for entrance */
+.water-entrance::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  background-image: 
+    radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.3) 2px, transparent 3px),
+    radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.3) 2px, transparent 3px),
+    radial-gradient(circle at 60% 5%, rgba(255, 255, 255, 0.3) 2px, transparent 3px),
+    radial-gradient(circle at 80% 15%, rgba(255, 255, 255, 0.3) 2px, transparent 3px),
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.3) 2px, transparent 3px),
+    radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.3) 2px, transparent 3px);
+  background-size: 200px 200px;
+  background-repeat: repeat;
+  pointer-events: none;
+  z-index: 9991;
+  animation: waterDropletsFade 2s ease-in-out forwards;
+}
+
+@keyframes waterDropletsFade {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+/* Back to home button */
+.back-to-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6em 1.2em;
+  font-size: 0.9rem;
+  background: rgba(0, 120, 255, 0.8);
+  color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.back-to-home:hover {
+  background: rgba(0, 150, 255, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
+}
+
+.back-to-home:active {
+  transform: translateY(0);
+}
+
+.connection-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-label {
+  font-size: 0.8rem;
+  color: var(--text-color);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.status-dot.active + .status-label {
+  opacity: 1;
+  color: #4CAF50;
+}
+
+.btn[disabled] {
+  opacity: 0.8;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Ready button waiting state */
+#start.waiting {
+  background: linear-gradient(to bottom, #FFD700, #E6B800);
+  color: #000;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+  animation: pulse-ready-btn 2s infinite;
+}
+
+@keyframes pulse-ready-btn {
+  0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+  50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
+  100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+}
+
+.highlight-ready {
+  background: linear-gradient(to bottom, #00cc66, #009933);
+  border: 2px solid #FFD700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+  transform: scale(1.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.highlight-ready::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, transparent 70%);
+  animation: pulse-highlight 2s infinite;
+}
+
+@keyframes pulse-highlight {
+  0% { transform: scale(0.9); opacity: 0.3; }
+  50% { transform: scale(1.1); opacity: 0.5; }
+  100% { transform: scale(0.9); opacity: 0.3; }
+}
+
+/* Connection Status Indicator */
+.connection-status {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.connection-status i {
+  margin-right: 6px;
+}
+
+.connection-status.connected {
+  background-color: rgba(0, 128, 0, 0.7);
+}
+
+.connection-status.disconnected {
+  background-color: rgba(255, 0, 0, 0.7);
+  animation: pulse 1.5s infinite;
+}
+
+/* Syncing notification */
+.sync-notification {
+  position: fixed;
+  top: 50px;
+  right: 20px;
+  background-color: rgba(0, 191, 255, 0.8);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 4px;
+  z-index: 9999;
+  animation: slideIn 0.3s ease;
+  transition: opacity 0.5s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.sync-notification.fade-out {
+  opacity: 0;
+}
+
+/* Turn notifications */
+.turn-notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px 40px;
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  border-radius: 10px;
+  z-index: 9999;
+  animation: popIn 0.5s ease;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.turn-notification.your-turn-notify {
+  background-color: rgba(40, 167, 69, 0.9);
+  box-shadow: 0 0 20px rgba(40, 167, 69, 0.5);
+}
+
+.turn-notification.enemy-turn-notify {
+  background-color: rgba(220, 53, 69, 0.9);
+  box-shadow: 0 0 20px rgba(220, 53, 69, 0.5);
+}
+
+.turn-notification.fade-out {
+  animation: fadeOut 1s ease forwards;
+}
+
+/* New Animations */
+@keyframes pulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(50px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes popIn {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+}
+
+/* Hit and miss animations */
+.hit-animation {
+  animation: hit-effect 0.5s ease-out;
+}
+
+.miss-animation {
+  animation: miss-effect 0.5s ease-out;
+}
+
+@keyframes hit-effect {
+  0% { transform: scale(1); background-color: inherit; }
+  20% { transform: scale(1.3); background-color: rgba(255, 50, 50, 0.8); }
+  100% { transform: scale(1); background-color: inherit; }
+}
+
+@keyframes miss-effect {
+  0% { transform: scale(1); background-color: inherit; }
+  20% { transform: scale(1.2); background-color: rgba(50, 100, 255, 0.8); }
+  100% { transform: scale(1); background-color: inherit; }
+}
+
+/* Mute button styles */
+.mute-button {
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.mute-button:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Additional game feedback visual cues */
+.boom {
+  animation: boom-pulse 2s infinite;
+}
+
+@keyframes boom-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+  70% { box-shadow: 0 0 0 5px rgba(255, 0, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+}
